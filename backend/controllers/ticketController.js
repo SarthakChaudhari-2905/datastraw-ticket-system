@@ -1,210 +1,376 @@
-const { Parser } =
-    require(
-        "json2csv"
-    );
+const { Parser } = require("json2csv");
 
 const Ticket = require("../models/Ticket");
 
+
+// CREATE TICKET
+
 const createTicket = async (req, res) => {
+
     try {
+
         const {
+
             customer_name,
             customer_email,
             subject,
-            description,
+            description
+
         } = req.body;
 
-        // Validation
         if (
+
             !customer_name ||
+
             !customer_email ||
+
             !subject ||
+
             !description
+
         ) {
+
             return res.status(400).json({
-                message: "All fields required",
+
+                message:
+                "All fields required"
+
             });
+
         }
 
-        // Count existing tickets
-        const count = await Ticket.countDocuments();
+        const count =
+        await Ticket.countDocuments();
 
-        const ticketNumber = String(count + 1).padStart(3, "0");
+        const ticketNumber =
 
-        const ticket_id = `TKT-${ticketNumber}`;
+        String(
+            count + 1
+        ).padStart(
+            3,
+            "0"
+        );
 
-        // Create ticket
-        const ticket = await Ticket.create({
+        const ticket_id =
+
+        `TKT-${ticketNumber}`;
+
+        const ticket =
+
+        await Ticket.create({
+
             ticket_id,
+
             customer_name,
+
             customer_email,
+
             subject,
-            description,
+
+            description
+
         });
 
         res.status(201).json({
-            success: true,
-            ticket,
+
+            success:true,
+
+            ticket
+
         });
 
-    } catch (error) {
+    }
+
+    catch(error){
+
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error",
+
+            message:
+            "Server Error"
+
         });
+
     }
+
 };
-const getTickets = async (req, res) => {
-    try {
+
+
+// GET ALL TICKETS + SEARCH + FILTER + PAGINATION
+
+const getTickets = async (req,res)=>{
+
+    try{
 
         const {
+
             search,
+
             status,
+
+            page=1,
+
+            limit=3
+
         } = req.query;
 
         let filter = {};
 
-        // Search logic
-        if (search) {
+        if(search){
 
-            filter.$or = [
+            filter.$or=[
 
                 {
-                    ticket_id: {
-                        $regex: search,
-                        $options: "i",
-                    },
+
+                    ticket_id:{
+
+                        $regex:search,
+
+                        $options:"i"
+
+                    }
+
                 },
 
                 {
-                    customer_name: {
-                        $regex: search,
-                        $options: "i",
-                    },
+
+                    customer_name:{
+
+                        $regex:search,
+
+                        $options:"i"
+
+                    }
+
                 },
 
                 {
-                    customer_email: {
-                        $regex: search,
-                        $options: "i",
-                    },
+
+                    customer_email:{
+
+                        $regex:search,
+
+                        $options:"i"
+
+                    }
+
                 },
 
                 {
-                    description: {
-                        $regex: search,
-                        $options: "i",
-                    },
+
+                    subject:{
+
+                        $regex:search,
+
+                        $options:"i"
+
+                    }
+
                 },
 
                 {
-                    subject: {
-                        $regex: search,
-                        $options: "i",
-                    },
-                },
+
+                    description:{
+
+                        $regex:search,
+
+                        $options:"i"
+
+                    }
+
+                }
 
             ];
 
         }
 
-        // Status filter
-        if (status) {
-            filter.status = status;
+        if(status){
+
+            filter.status=status;
+
         }
 
-        const tickets = await Ticket.find(
+        const skip =
+
+        (
+
+            Number(page)-1
+
+        )
+
+        *
+
+        Number(limit);
+
+        const tickets =
+
+        await Ticket.find(filter)
+
+        .sort({
+
+            createdAt:-1
+
+        })
+
+        .skip(skip)
+
+        .limit(
+
+            Number(limit)
+
+        );
+
+        const totalTickets =
+
+        await Ticket.countDocuments(
+
             filter
-        ).sort({
-            createdAt: -1,
-        });
+
+        );
 
         res.status(200).json({
-            success: true,
-            total: tickets.length,
+
+            success:true,
+
             tickets,
+
+            currentPage:
+
+            Number(page),
+
+            totalPages:
+
+            Math.ceil(
+
+                totalTickets/
+
+                Number(limit)
+
+            ),
+
+            totalTickets
+
         });
 
-    } catch (error) {
+    }
+
+    catch(error){
 
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error",
+
+            message:
+            "Server Error"
+
         });
 
     }
-};
-const getSingleTicket = async (req, res) => {
 
-    try {
+};
+
+
+// SINGLE TICKET
+
+const getSingleTicket = async (req,res)=>{
+
+    try{
 
         const { ticketId } = req.params;
 
-        const ticket = await Ticket.findOne({
-            ticket_id: ticketId,
+        const ticket =
+
+        await Ticket.findOne({
+
+            ticket_id:ticketId
+
         });
 
-        if (!ticket) {
+        if(!ticket){
 
             return res.status(404).json({
-                message: "Ticket not found",
+
+                message:
+                "Ticket not found"
+
             });
 
         }
 
         res.status(200).json({
-            success: true,
-            ticket,
+
+            success:true,
+
+            ticket
+
         });
 
-    } catch (error) {
+    }
+
+    catch(error){
 
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error",
+
+            message:
+            "Server Error"
+
         });
 
     }
 
 };
-const updateTicket = async (req, res) => {
 
-    try {
+
+// UPDATE TICKET
+
+const updateTicket = async (req,res)=>{
+
+    try{
 
         const { ticketId } = req.params;
 
         const {
+
             status,
-            note,
+
+            note
+
         } = req.body;
 
-        const ticket = await Ticket.findOne({
-            ticket_id: ticketId,
+        const ticket =
+
+        await Ticket.findOne({
+
+            ticket_id:ticketId
+
         });
 
-        if (!ticket) {
+        if(!ticket){
 
             return res.status(404).json({
-                message: "Ticket not found",
+
+                message:
+                "Ticket not found"
+
             });
 
         }
 
-        // update status
+        if(status){
 
-        if (status) {
-            ticket.status = status;
+            ticket.status=status;
+
         }
 
-        // add note
-
-        if (note) {
+        if(note){
 
             ticket.notes.push({
-                text: note,
+
+                text:note
+
             });
 
         }
@@ -212,39 +378,53 @@ const updateTicket = async (req, res) => {
         await ticket.save();
 
         res.status(200).json({
-            success: true,
-            ticket,
+
+            success:true,
+
+            ticket
+
         });
 
-    } catch (error) {
+    }
+
+    catch(error){
 
         console.log(error);
 
         res.status(500).json({
-            message: "Server Error",
+
+            message:
+            "Server Error"
+
         });
 
     }
 
 };
-const deleteTicket = async (req, res) => {
 
-    try {
+
+// DELETE TICKET
+
+const deleteTicket = async (req,res)=>{
+
+    try{
 
         const { id } = req.params;
 
         const deletedTicket =
-            await Ticket.findOneAndDelete({
 
-                ticket_id: id
+        await Ticket.findOneAndDelete({
 
-            });
+            ticket_id:id
 
-        if (!deletedTicket) {
+        });
+
+        if(!deletedTicket){
 
             return res.status(404).json({
 
-                message: "Ticket not found"
+                message:
+                "Ticket not found"
 
             });
 
@@ -252,103 +432,117 @@ const deleteTicket = async (req, res) => {
 
         res.status(200).json({
 
-            message: "Ticket deleted"
+            message:
+            "Ticket deleted"
 
         });
 
     }
 
-    catch (err) {
+    catch(error){
 
-        console.log(err);
+        console.log(error);
 
         res.status(500).json({
 
-            message: "Delete failed"
+            message:
+            "Delete failed"
 
         });
 
     }
 
 };
-const exportTickets =
-    async (req, res) => {
 
-        try {
 
-            const tickets =
-                await Ticket.find();
+// EXPORT CSV
 
-            const fields = [
+const exportTickets = async (req,res)=>{
 
-                "ticket_id",
+    try{
 
-                "customer_name",
+        const tickets =
 
-                "customer_email",
+        await Ticket.find();
 
-                "subject",
+        const fields=[
 
-                "description",
+            "ticket_id",
 
-                "status"
+            "customer_name",
 
-            ];
+            "customer_email",
 
-            const parser =
-                new Parser({
+            "subject",
 
-                    fields
+            "description",
 
-                });
+            "status"
 
-            const csv =
+        ];
 
-                parser.parse(
-                    tickets
-                );
+        const parser =
 
-            res.header(
-                "Content-Type",
-                "text/csv"
-            );
+        new Parser({
 
-            res.attachment(
-                "tickets.csv"
-            );
+            fields
 
-            return res.send(
-                csv
-            );
+        });
 
-        }
+        const csv =
 
-        catch (err) {
+        parser.parse(
 
-            console.log(err);
+            tickets
 
-            res.status(500).json({
+        );
 
-                message:
-                    "Export failed"
+        res.header(
 
-            });
+            "Content-Type",
 
-        }
+            "text/csv"
 
-    };
-module.exports = {
+        );
 
-    createTicket,
+        res.attachment(
 
-    getTickets,
+            "tickets.csv"
 
-    getSingleTicket,
+        );
 
-    updateTicket,
+        return res.send(csv);
 
-    deleteTicket,
+    }
 
-    exportTickets
+    catch(error){
+
+        console.log(error);
+
+        res.status(500).json({
+
+            message:
+            "Export failed"
+
+        });
+
+    }
+
+};
+
+
+module.exports={
+
+createTicket,
+
+getTickets,
+
+getSingleTicket,
+
+updateTicket,
+
+deleteTicket,
+
+exportTickets
 
 };
