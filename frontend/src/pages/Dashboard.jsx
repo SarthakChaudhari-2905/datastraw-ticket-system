@@ -6,28 +6,44 @@ useState
 import { motion } from "framer-motion";
 
 import api from "../services/api";
+
 import TicketCard from "../components/TicketCard";
 
 function Dashboard(){
 
 const [tickets,setTickets]=useState([]);
+
 const [search,setSearch]=useState("");
-const [statusFilter,setStatusFilter]=useState("All");
-const [loading,setLoading]=useState(true);
+
+const [statusFilter,
+setStatusFilter]=useState("All");
+
+const [loading,
+setLoading]=useState(true);
+
+const [page,
+setPage]=useState(1);
+
+const [totalPages,
+setTotalPages]=useState(1);
 
 useEffect(()=>{
 
 fetchTickets();
 
-const interval=setInterval(()=>{
+const interval=
+
+setInterval(()=>{
 
 fetchTickets();
 
 },10000);
 
-return()=>clearInterval(interval);
+return()=>clearInterval(
+interval
+);
 
-},[]);
+},[page]);
 
 const fetchTickets=async()=>{
 
@@ -36,20 +52,29 @@ try{
 setLoading(true);
 
 const res=
+
 await api.get(
-"/tickets"
+
+`/tickets?page=${page}&limit=3`
+
 );
 
 setTickets(
 res.data.tickets
 );
 
+setTotalPages(
+res.data.totalPages
+);
+
 }
+
 catch(err){
 
 console.log(err);
 
 }
+
 finally{
 
 setLoading(false);
@@ -59,24 +84,31 @@ setLoading(false);
 };
 
 const filteredTickets=
+
 tickets.filter((ticket)=>{
 
 const searchMatch=
 
 ticket.subject
+
 .toLowerCase()
 
 .includes(
+
 search.toLowerCase()
+
 )
 
 ||
 
 ticket.customer_name
+
 .toLowerCase()
 
 .includes(
+
 search.toLowerCase()
+
 );
 
 const statusMatch=
@@ -89,12 +121,13 @@ true
 
 :
 
-ticket.status===
-statusFilter;
+ticket.status===statusFilter;
 
 return(
+
 searchMatch &&
 statusMatch
+
 );
 
 });
@@ -102,20 +135,29 @@ statusMatch
 const total=tickets.length;
 
 const open=
+
 tickets.filter(
+
 t=>t.status==="Open"
+
 ).length;
 
 const progress=
+
 tickets.filter(
+
 t=>
-t.status===
-"In Progress"
+
+t.status==="In Progress"
+
 ).length;
 
 const closed=
+
 tickets.filter(
+
 t=>t.status==="Closed"
+
 ).length;
 
 return(
@@ -159,27 +201,16 @@ marginBottom:"30px"
 }}
 >
 
-<Card
-title="Total"
-value={total}
-/>
+<Card title="Total" value={total}/>
 
-<Card
-title="Open"
-value={open}
-/>
+<Card title="Open" value={open}/>
 
-<Card
-title="Progress"
-value={progress}
-/>
+<Card title="Progress" value={progress}/>
 
-<Card
-title="Closed"
-value={closed}
-/>
+<Card title="Closed" value={closed}/>
 
 </div>
+
 <div
 style={{
 
@@ -199,7 +230,7 @@ onClick={()=>
 
 window.open(
 
-"http://localhost:5000/api/tickets/export/csv"
+"https://datastraw-ticket-system.onrender.com/api/tickets/export/csv"
 
 )
 
@@ -228,6 +259,7 @@ Export CSV
 </button>
 
 </div>
+
 <input
 
 placeholder=
@@ -253,13 +285,12 @@ marginBottom:"25px",
 
 background:"#162236",
 
-border:"1px solid rgba(255,255,255,.05)",
+border:
+"1px solid rgba(255,255,255,.05)",
 
 borderRadius:"16px",
 
-color:"white",
-
-fontSize:"15px"
+color:"white"
 
 }}
 
@@ -270,7 +301,7 @@ style={{
 
 display:"flex",
 
-gap:"12px",
+gap:"10px",
 
 marginBottom:"30px",
 
@@ -281,77 +312,42 @@ flexWrap:"wrap"
 
 <button
 style={
-
 statusFilter==="All"
-
 ?
-
 activeBtn
-
 :
-
 filterBtn
-
 }
-
-onClick={()=>
-
-setStatusFilter(
-"All"
-)
-
-}
+onClick={()=>setStatusFilter("All")}
 >
 All
 </button>
 
 <button
 style={
-
 statusFilter==="Open"
-
 ?
-
 activeBtn
-
 :
-
 filterBtn
-
 }
-
-onClick={()=>
-
-setStatusFilter(
-"Open"
-)
-
-}
+onClick={()=>setStatusFilter("Open")}
 >
 Open
 </button>
 
 <button
 style={
-
 statusFilter==="In Progress"
-
 ?
-
 activeBtn
-
 :
-
 filterBtn
-
 }
-
 onClick={()=>
-
 setStatusFilter(
 "In Progress"
 )
-
 }
 >
 Progress
@@ -359,25 +355,16 @@ Progress
 
 <button
 style={
-
 statusFilter==="Closed"
-
 ?
-
 activeBtn
-
 :
-
 filterBtn
-
 }
-
 onClick={()=>
-
 setStatusFilter(
 "Closed"
 )
-
 }
 >
 Closed
@@ -386,84 +373,18 @@ Closed
 </div>
 
 {
+
 loading
 
 ?
-
-<div>
-
-{
-
-[1,2,3].map((item)=>(
-
-<div
-
-key={item}
-
-style={{
-
-height:"130px",
-
-background:"#162236",
-
-borderRadius:"20px",
-
-marginBottom:"20px",
-
-animation:
-"pulse 1.2s infinite"
-
-}}
-
->
-
-</div>
-
-))
-
-}
-
-</div>
-
-:
-
-
-filteredTickets.length===0
-
-?
-
-<div
-style={{
-
-padding:"45px",
-
-background:"#162236",
-
-borderRadius:"20px",
-
-textAlign:"center"
-
-}}
->
 
 <h2
 style={{
 color:"white"
 }}
 >
-No Tickets Found
+Loading...
 </h2>
-
-<p
-style={{
-color:"#94a3b8",
-marginTop:"10px"
-}}
->
-Create ticket or change filter
-</p>
-
-</div>
 
 :
 
@@ -476,23 +397,17 @@ filteredTickets.map(
 key={ticket._id}
 
 initial={{
-
 opacity:0,
 y:20
-
 }}
 
 animate={{
-
 opacity:1,
 y:0
-
 }}
 
 transition={{
-
 delay:index*0.08
-
 }}
 
 >
@@ -508,6 +423,80 @@ ticket={ticket}
 )
 
 }
+
+<div
+
+style={{
+
+display:"flex",
+
+justifyContent:"center",
+
+gap:"10px",
+
+marginTop:"30px",
+
+flexWrap:"wrap"
+
+}}
+
+>
+
+{
+
+[...Array(totalPages)]
+
+.map((_,index)=>(
+
+<button
+
+key={index}
+
+onClick={()=>
+
+setPage(
+index+1
+)
+
+}
+
+style={{
+
+padding:"12px 16px",
+
+background:
+
+page===index+1
+
+?
+
+"#2563eb"
+
+:
+
+"#162236",
+
+color:"white",
+
+border:"none",
+
+borderRadius:"10px",
+
+cursor:"pointer"
+
+}}
+
+>
+
+{index+1}
+
+</button>
+
+))
+
+}
+
+</div>
 
 </div>
 
@@ -532,13 +521,7 @@ padding:"24px",
 background:
 "linear-gradient(135deg,#162236,#1e293b)",
 
-borderRadius:"20px",
-
-boxShadow:
-"0 10px 30px rgba(0,0,0,.35)",
-
-border:
-"1px solid rgba(255,255,255,.05)"
+borderRadius:"20px"
 
 }}
 >
@@ -548,21 +531,15 @@ style={{
 color:"#94a3b8"
 }}
 >
-
 {title}
-
 </p>
 
 <h2
 style={{
-color:"white",
-marginTop:"12px",
-fontSize:"30px"
+color:"white"
 }}
 >
-
 {value}
-
 </h2>
 
 </div>
