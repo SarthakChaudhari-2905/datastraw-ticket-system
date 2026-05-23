@@ -73,14 +73,33 @@ https://datastraw-ticket-system.onrender.com/
 ---
 
 ### Extra Features
-✅ Toast notifications
+✅ CSV Export  
+✅ Responsive Dashboard UI  
+✅ Real-time Auto Refresh  
+✅ Toast Notifications  
+✅ Animated Cards using Framer Motion  
+✅ Loading Skeleton UI  
+✅ Pagination Support (3 tickets per page)
 
-✅ CSV export
+---
 
-✅ Responsive UI
+## Pagination
 
-✅ MongoDB persistence
+The dashboard supports pagination.
 
+Example:
+
+GET
+
+/api/tickets?page=1&limit=3
+
+/api/tickets?page=2&limit=3
+
+/api/tickets?page=3&limit=3
+
+Each page displays:
+
+- 3 Tickets Per Page
 ---
 
 ## 📌 API Endpoints
