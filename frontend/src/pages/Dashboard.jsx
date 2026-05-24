@@ -31,9 +31,7 @@ useEffect(()=>{
 
 fetchTickets();
 
-const interval=
-
-setInterval(()=>{
+const interval=setInterval(()=>{
 
 fetchTickets();
 
@@ -43,7 +41,11 @@ return()=>clearInterval(
 interval
 );
 
-},[page]);
+},[
+page,
+search,
+statusFilter
+]);
 
 const fetchTickets=async()=>{
 
@@ -51,11 +53,21 @@ try{
 
 setLoading(true);
 
-const res=
+const statusValue=
 
-await api.get(
+statusFilter==="All"
 
-`/tickets?page=${page}&limit=3`
+?
+
+""
+
+:
+
+statusFilter;
+
+const res=await api.get(
+
+`/tickets?page=${page}&limit=3&search=${search}&status=${statusValue}`
 
 );
 
@@ -83,81 +95,18 @@ setLoading(false);
 
 };
 
-const filteredTickets=
-
-tickets.filter((ticket)=>{
-
-const searchMatch=
-
-ticket.subject
-
-.toLowerCase()
-
-.includes(
-
-search.toLowerCase()
-
-)
-
-||
-
-ticket.customer_name
-
-.toLowerCase()
-
-.includes(
-
-search.toLowerCase()
-
-);
-
-const statusMatch=
-
-statusFilter==="All"
-
-?
-
-true
-
-:
-
-ticket.status===statusFilter;
-
-return(
-
-searchMatch &&
-statusMatch
-
-);
-
-});
-
 const total=tickets.length;
 
-const open=
-
-tickets.filter(
-
+const open=tickets.filter(
 t=>t.status==="Open"
-
 ).length;
 
-const progress=
-
-tickets.filter(
-
-t=>
-
-t.status==="In Progress"
-
+const progress=tickets.filter(
+t=>t.status==="In Progress"
 ).length;
 
-const closed=
-
-tickets.filter(
-
+const closed=tickets.filter(
 t=>t.status==="Closed"
-
 ).length;
 
 return(
@@ -267,13 +216,15 @@ placeholder=
 
 value={search}
 
-onChange={(e)=>
+onChange={(e)=>{
 
 setSearch(
 e.target.value
-)
+);
 
-}
+setPage(1);
+
+}}
 
 style={{
 
@@ -318,7 +269,15 @@ activeBtn
 :
 filterBtn
 }
-onClick={()=>setStatusFilter("All")}
+onClick={()=>{
+
+setStatusFilter(
+"All"
+);
+
+setPage(1);
+
+}}
 >
 All
 </button>
@@ -331,7 +290,15 @@ activeBtn
 :
 filterBtn
 }
-onClick={()=>setStatusFilter("Open")}
+onClick={()=>{
+
+setStatusFilter(
+"Open"
+);
+
+setPage(1);
+
+}}
 >
 Open
 </button>
@@ -344,11 +311,15 @@ activeBtn
 :
 filterBtn
 }
-onClick={()=>
+onClick={()=>{
+
 setStatusFilter(
 "In Progress"
-)
-}
+);
+
+setPage(1);
+
+}}
 >
 Progress
 </button>
@@ -361,11 +332,15 @@ activeBtn
 :
 filterBtn
 }
-onClick={()=>
+onClick={()=>{
+
 setStatusFilter(
 "Closed"
-)
-}
+);
+
+setPage(1);
+
+}}
 >
 Closed
 </button>
@@ -388,7 +363,23 @@ Loading...
 
 :
 
-filteredTickets.map(
+tickets.length===0
+
+?
+
+<h2
+style={{
+color:"white"
+}}
+>
+
+No Tickets Found
+
+</h2>
+
+:
+
+tickets.map(
 
 (ticket,index)=>(
 
