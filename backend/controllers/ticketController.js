@@ -101,172 +101,185 @@ const createTicket = async (req, res) => {
 
 const getTickets = async (req,res)=>{
 
-    try{
+try{
 
-        const {
+const {
 
-            search,
+search,
+status,
+page=1,
+limit=3
 
-            status,
+}=req.query;
 
-            page=1,
+let filter={};
 
-            limit=3
+if(search){
 
-        } = req.query;
+filter.$or=[
 
-        let filter = {};
+{
+ticket_id:{
+$regex:search,
+$options:"i"
+}
+},
 
-        if(search){
+{
+customer_name:{
+$regex:search,
+$options:"i"
+}
+},
 
-            filter.$or=[
+{
+customer_email:{
+$regex:search,
+$options:"i"
+}
+},
 
-                {
+{
+subject:{
+$regex:search,
+$options:"i"
+}
+},
 
-                    ticket_id:{
+{
+description:{
+$regex:search,
+$options:"i"
+}
+}
 
-                        $regex:search,
+];
 
-                        $options:"i"
+}
 
-                    }
+if(status){
 
-                },
+filter.status=status;
 
-                {
+}
 
-                    customer_name:{
+const skip=
 
-                        $regex:search,
+(Number(page)-1)
 
-                        $options:"i"
+*
 
-                    }
+Number(limit);
 
-                },
+const tickets=
 
-                {
+await Ticket.find(filter)
 
-                    customer_email:{
+.sort({
 
-                        $regex:search,
+createdAt:-1
 
-                        $options:"i"
+})
 
-                    }
+.skip(skip)
 
-                },
+.limit(
 
-                {
+Number(limit)
 
-                    subject:{
+);
 
-                        $regex:search,
+const totalTickets=
 
-                        $options:"i"
+await Ticket.countDocuments(
+filter
+);
 
-                    }
+const openCount=
 
-                },
+await Ticket.countDocuments({
 
-                {
+status:"Open"
 
-                    description:{
+});
 
-                        $regex:search,
+const progressCount=
 
-                        $options:"i"
+await Ticket.countDocuments({
 
-                    }
+status:"In Progress"
 
-                }
+});
 
-            ];
+const closedCount=
 
-        }
+await Ticket.countDocuments({
 
-        if(status){
+status:"Closed"
 
-            filter.status=status;
+});
 
-        }
+res.status(200).json({
 
-        const skip =
+success:true,
 
-        (
+tickets,
 
-            Number(page)-1
+currentPage:
 
-        )
+Number(page),
 
-        *
+totalPages:
 
-        Number(limit);
+Math.ceil(
 
-        const tickets =
+totalTickets/
 
-        await Ticket.find(filter)
+Number(limit)
 
-        .sort({
+),
 
-            createdAt:-1
+totalTickets,
 
-        })
+stats:{
 
-        .skip(skip)
+total:
 
-        .limit(
+openCount+
 
-            Number(limit)
+progressCount+
 
-        );
+closedCount,
 
-        const totalTickets =
+open:
 
-        await Ticket.countDocuments(
+openCount,
 
-            filter
+progress:
 
-        );
+progressCount,
 
-        res.status(200).json({
+closed:
 
-            success:true,
+closedCount
 
-            tickets,
+}
 
-            currentPage:
+});
 
-            Number(page),
+}
 
-            totalPages:
+catch(error){
 
-            Math.ceil(
+console.log(error);
 
-                totalTickets/
+res.status(500).json({
 
-                Number(limit)
+message:"Server Error"
 
-            ),
+});
 
-            totalTickets
-
-        });
-
-    }
-
-    catch(error){
-
-        console.log(error);
-
-        res.status(500).json({
-
-            message:
-            "Server Error"
-
-        });
-
-    }
+}
 
 };
 
