@@ -15,8 +15,10 @@ const [tickets,setTickets]=useState([]);
 
 const [search,setSearch]=useState("");
 
-const [statusFilter,
-setStatusFilter]=useState("All");
+const [
+statusFilter,
+setStatusFilter
+]=useState("All");
 
 const [loading,
 setLoading]=useState(true);
@@ -27,11 +29,26 @@ setPage]=useState(1);
 const [totalPages,
 setTotalPages]=useState(1);
 
+const [stats,
+setStats]=useState({
+
+total:0,
+
+open:0,
+
+progress:0,
+
+closed:0
+
+});
+
 useEffect(()=>{
 
 fetchTickets();
 
-const interval=setInterval(()=>{
+const interval=
+
+setInterval(()=>{
 
 fetchTickets();
 
@@ -47,7 +64,8 @@ search,
 statusFilter
 ]);
 
-const fetchTickets=async()=>{
+const fetchTickets=
+async()=>{
 
 try{
 
@@ -65,7 +83,9 @@ statusFilter==="All"
 
 statusFilter;
 
-const res=await api.get(
+const res=
+
+await api.get(
 
 `/tickets?page=${page}&limit=3&search=${search}&status=${statusValue}`
 
@@ -77,6 +97,10 @@ res.data.tickets
 
 setTotalPages(
 res.data.totalPages
+);
+
+setStats(
+res.data.stats
 );
 
 }
@@ -94,20 +118,6 @@ setLoading(false);
 }
 
 };
-
-const total=tickets.length;
-
-const open=tickets.filter(
-t=>t.status==="Open"
-).length;
-
-const progress=tickets.filter(
-t=>t.status==="In Progress"
-).length;
-
-const closed=tickets.filter(
-t=>t.status==="Closed"
-).length;
 
 return(
 
@@ -150,28 +160,27 @@ marginBottom:"30px"
 }}
 >
 
-<Card title="Total" value={total}/>
+<Card
+title="Total"
+value={stats.total}
+/>
 
-<Card title="Open" value={open}/>
+<Card
+title="Open"
+value={stats.open}
+/>
 
-<Card title="Progress" value={progress}/>
+<Card
+title="Progress"
+value={stats.progress}
+/>
 
-<Card title="Closed" value={closed}/>
+<Card
+title="Closed"
+value={stats.closed}
+/>
 
 </div>
-
-<div
-style={{
-
-display:"flex",
-
-justifyContent:
-"space-between",
-
-marginBottom:"25px"
-
-}}
->
 
 <button
 
@@ -197,7 +206,9 @@ borderRadius:"14px",
 
 color:"white",
 
-cursor:"pointer"
+cursor:"pointer",
+
+marginBottom:"25px"
 
 }}
 
@@ -206,8 +217,6 @@ cursor:"pointer"
 Export CSV
 
 </button>
-
-</div>
 
 <input
 
@@ -245,7 +254,7 @@ color:"white"
 
 }}
 
- />
+/>
 
 <div
 style={{
@@ -261,89 +270,53 @@ flexWrap:"wrap"
 }}
 >
 
-<button
-style={
-statusFilter==="All"
-?
-activeBtn
-:
-filterBtn
-}
-onClick={()=>{
+{
 
-setStatusFilter(
-"All"
-);
-
-setPage(1);
-
-}}
->
-All
-</button>
-
-<button
-style={
-statusFilter==="Open"
-?
-activeBtn
-:
-filterBtn
-}
-onClick={()=>{
-
-setStatusFilter(
-"Open"
-);
-
-setPage(1);
-
-}}
->
-Open
-</button>
-
-<button
-style={
-statusFilter==="In Progress"
-?
-activeBtn
-:
-filterBtn
-}
-onClick={()=>{
-
-setStatusFilter(
-"In Progress"
-);
-
-setPage(1);
-
-}}
->
-Progress
-</button>
-
-<button
-style={
-statusFilter==="Closed"
-?
-activeBtn
-:
-filterBtn
-}
-onClick={()=>{
-
-setStatusFilter(
+[
+"All",
+"Open",
+"In Progress",
 "Closed"
+
+].map((item)=>(
+
+<button
+
+key={item}
+
+style={
+
+statusFilter===item
+
+?
+
+activeBtn
+
+:
+
+filterBtn
+
+}
+
+onClick={()=>{
+
+setStatusFilter(
+item
 );
 
 setPage(1);
 
 }}
+
 >
-Closed
+
+{item}
+
 </button>
+
+))
+
+}
 
 </div>
 
@@ -358,7 +331,9 @@ style={{
 color:"white"
 }}
 >
+
 Loading...
+
 </h2>
 
 :
@@ -425,9 +400,7 @@ justifyContent:"center",
 
 gap:"10px",
 
-marginTop:"30px",
-
-flexWrap:"wrap"
+marginTop:"30px"
 
 }}
 
@@ -522,7 +495,9 @@ style={{
 color:"#94a3b8"
 }}
 >
+
 {title}
+
 </p>
 
 <h2
@@ -530,7 +505,9 @@ style={{
 color:"white"
 }}
 >
+
 {value}
+
 </h2>
 
 </div>
